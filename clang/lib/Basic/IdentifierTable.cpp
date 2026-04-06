@@ -113,7 +113,8 @@ static KeywordStatus getKeywordStatusHelper(const LangOptions &LangOpts,
   case KEYMS:
     return LangOpts.MicrosoftExt ? KS_Extension : KS_Unknown;
   case BOOLSUPPORT:
-    if (LangOpts.Bool)      return KS_Enabled;
+    if (LangOpts.Bool)
+      return KS_Enabled;
     return !LangOpts.CPlusPlus ? KS_Future : KS_Unknown;
   case KEYALTIVEC:
     return LangOpts.AltiVec ? KS_Enabled : KS_Unknown;
@@ -127,9 +128,12 @@ static KeywordStatus getKeywordStatusHelper(const LangOptions &LangOpts,
   case HALFSUPPORT:
     return LangOpts.Half ? KS_Enabled : KS_Unknown;
   case CHAR8SUPPORT:
-    if (LangOpts.Char8) return KS_Enabled;
-    if (LangOpts.CPlusPlus20) return KS_Unknown;
-    if (LangOpts.CPlusPlus) return KS_Future;
+    if (LangOpts.Char8)
+      return KS_Enabled;
+    if (LangOpts.CPlusPlus20)
+      return KS_Unknown;
+    if (LangOpts.CPlusPlus)
+      return KS_Future;
     return KS_Unknown;
   case KEYOBJC:
     // We treat bridge casts as objective-C keywords so we can warn on them
@@ -166,6 +170,8 @@ static KeywordStatus getKeywordStatusHelper(const LangOptions &LangOpts,
     return LangOpts.FixedPoint ? KS_Enabled : KS_Disabled;
   case KEYDEFERTS:
     return LangOpts.DeferTS ? KS_Enabled : KS_Disabled;
+  case KEYCXC:
+    return LangOpts.CXCExtensions ? KS_Enabled : KS_Disabled;
   default:
     llvm_unreachable("Unknown KeywordStatus flag");
   }
@@ -174,10 +180,12 @@ static KeywordStatus getKeywordStatusHelper(const LangOptions &LangOpts,
 KeywordStatus clang::getKeywordStatus(const LangOptions &LangOpts,
                                       unsigned Flags) {
   // KEYALL means always enabled, so special case this one.
-  if (Flags == KEYALL) return KS_Enabled;
+  if (Flags == KEYALL)
+    return KS_Enabled;
   // These are tests that need to 'always win', as they are special in that they
   // disable based on certain conditions.
-  if (LangOpts.OpenCL && (Flags & KEYNOOPENCL)) return KS_Disabled;
+  if (LangOpts.OpenCL && (Flags & KEYNOOPENCL))
+    return KS_Disabled;
   if (LangOpts.MSVCCompat && (Flags & KEYNOMS18) &&
       !LangOpts.isCompatibleWithMSVC(LangOptions::MSVC2015))
     return KS_Disabled;
@@ -213,9 +221,9 @@ static void MarkIdentifierAsKeywordInCpp(IdentifierTable &Table,
 /// AddKeyword - This method is used to associate a token ID with specific
 /// identifiers because they are language keywords.  This causes the lexer to
 /// automatically map matching identifiers to specialized token codes.
-static void AddKeyword(StringRef Keyword,
-                       tok::TokenKind TokenCode, unsigned Flags,
-                       const LangOptions &LangOpts, IdentifierTable &Table) {
+static void AddKeyword(StringRef Keyword, tok::TokenKind TokenCode,
+                       unsigned Flags, const LangOptions &LangOpts,
+                       IdentifierTable &Table) {
   KeywordStatus AddResult = getKeywordStatus(LangOpts, Flags);
 
   // Don't add this keyword if disabled in this language and isn't otherwise
@@ -239,8 +247,7 @@ static void AddKeyword(StringRef Keyword,
 
 /// AddCXXOperatorKeyword - Register a C++ operator keyword alternative
 /// representations.
-static void AddCXXOperatorKeyword(StringRef Keyword,
-                                  tok::TokenKind TokenCode,
+static void AddCXXOperatorKeyword(StringRef Keyword, tok::TokenKind TokenCode,
                                   IdentifierTable &Table) {
   IdentifierInfo &Info = Table.get(Keyword, TokenCode);
   Info.setIsCPlusPlusOperatorKeyword();
@@ -248,8 +255,7 @@ static void AddCXXOperatorKeyword(StringRef Keyword,
 
 /// AddObjCKeyword - Register an Objective-C \@keyword like "class" "selector"
 /// or "property".
-static void AddObjCKeyword(StringRef Name,
-                           tok::ObjCKeywordKind ObjCID,
+static void AddObjCKeyword(StringRef Name, tok::ObjCKeywordKind ObjCID,
                            IdentifierTable &Table) {
   Table.get(Name).setObjCKeywordID(ObjCID);
 }
@@ -268,19 +274,17 @@ static void AddNotableIdentifier(StringRef Name,
 ///
 void IdentifierTable::AddKeywords(const LangOptions &LangOpts) {
   // Add keywords and tokens for the current language.
-#define KEYWORD(NAME, FLAGS) \
-  AddKeyword(StringRef(#NAME), tok::kw_ ## NAME,  \
-             FLAGS, LangOpts, *this);
-#define ALIAS(NAME, TOK, FLAGS) \
-  AddKeyword(StringRef(NAME), tok::kw_ ## TOK,  \
-             FLAGS, LangOpts, *this);
+#define KEYWORD(NAME, FLAGS)                                                   \
+  AddKeyword(StringRef(#NAME), tok::kw_##NAME, FLAGS, LangOpts, *this);
+#define ALIAS(NAME, TOK, FLAGS)                                                \
+  AddKeyword(StringRef(NAME), tok::kw_##TOK, FLAGS, LangOpts, *this);
 #define CXX_KEYWORD_OPERATOR(NAME, ALIAS)                                      \
   if (LangOpts.CXXOperatorNames)                                               \
     AddCXXOperatorKeyword(StringRef(#NAME), tok::ALIAS, *this);                \
   else                                                                         \
     MarkIdentifierAsKeywordInCpp(*this, StringRef(#NAME));
-#define OBJC_AT_KEYWORD(NAME)  \
-  if (LangOpts.ObjC)           \
+#define OBJC_AT_KEYWORD(NAME)                                                  \
+  if (LangOpts.ObjC)                                                           \
     AddObjCKeyword(StringRef(#NAME), tok::objc_##NAME, *this);
 #define NOTABLE_IDENTIFIER(NAME)                                               \
   AddNotableIdentifier(StringRef(#NAME), tok::NAME, *this);
@@ -289,8 +293,8 @@ void IdentifierTable::AddKeywords(const LangOptions &LangOpts) {
 #include "clang/Basic/TokenKinds.def"
 
   if (LangOpts.ParseUnknownAnytype)
-    AddKeyword("__unknown_anytype", tok::kw___unknown_anytype, KEYALL,
-               LangOpts, *this);
+    AddKeyword("__unknown_anytype", tok::kw___unknown_anytype, KEYALL, LangOpts,
+               *this);
 
   if (LangOpts.DeclSpecKeyword)
     AddKeyword("__declspec", tok::kw___declspec, KEYALL, LangOpts, *this);
@@ -311,10 +315,12 @@ void IdentifierTable::AddKeywords(const LangOptions &LangOpts) {
 static KeywordStatus getTokenKwStatus(const LangOptions &LangOpts,
                                       tok::TokenKind K) {
   switch (K) {
-#define KEYWORD(NAME, FLAGS) \
-  case tok::kw_##NAME: return getKeywordStatus(LangOpts, FLAGS);
+#define KEYWORD(NAME, FLAGS)                                                   \
+  case tok::kw_##NAME:                                                         \
+    return getKeywordStatus(LangOpts, FLAGS);
 #include "clang/Basic/TokenKinds.def"
-  default: return KS_Disabled;
+  default:
+    return KS_Disabled;
   }
 }
 
@@ -409,12 +415,13 @@ tok::PPKeywordKind IdentifierInfo::getPPKeywordID() const {
 
 #define HASH(LEN, FIRST, THIRD)                                                \
   (LEN << 6) + (((FIRST - 'a') - (THIRD - 'a')) & 63)
-#define CASE(LEN, FIRST, THIRD, NAME) \
-  case HASH(LEN, FIRST, THIRD): \
-    return memcmp(Name, #NAME, LEN) ? tok::pp_not_keyword : tok::pp_ ## NAME
+#define CASE(LEN, FIRST, THIRD, NAME)                                          \
+  case HASH(LEN, FIRST, THIRD):                                                \
+    return memcmp(Name, #NAME, LEN) ? tok::pp_not_keyword : tok::pp_##NAME
 
   unsigned Len = getLength();
-  if (Len < 2) return tok::pp_not_keyword;
+  if (Len < 2)
+    return tok::pp_not_keyword;
   const char *Name = getNameStart();
 
   if (Name[0] == '_' && isImportKeyword())
@@ -473,13 +480,15 @@ tok::PPKeywordKind IdentifierInfo::getPPKeywordID() const {
 void IdentifierTable::PrintStats() const {
   unsigned NumBuckets = HashTable.getNumBuckets();
   unsigned NumIdentifiers = HashTable.getNumItems();
-  unsigned NumEmptyBuckets = NumBuckets-NumIdentifiers;
+  unsigned NumEmptyBuckets = NumBuckets - NumIdentifiers;
   unsigned AverageIdentifierSize = 0;
   unsigned MaxIdentifierLength = 0;
 
   // TODO: Figure out maximum times an identifier had to probe for -stats.
-  for (llvm::StringMap<IdentifierInfo*, llvm::BumpPtrAllocator>::const_iterator
-       I = HashTable.begin(), E = HashTable.end(); I != E; ++I) {
+  for (llvm::StringMap<IdentifierInfo *, llvm::BumpPtrAllocator>::const_iterator
+           I = HashTable.begin(),
+           E = HashTable.end();
+       I != E; ++I) {
     unsigned IdLen = I->getKeyLength();
     AverageIdentifierSize += IdLen;
     if (MaxIdentifierLength < IdLen)
@@ -490,9 +499,9 @@ void IdentifierTable::PrintStats() const {
   fprintf(stderr, "# Identifiers:   %d\n", NumIdentifiers);
   fprintf(stderr, "# Empty Buckets: %d\n", NumEmptyBuckets);
   fprintf(stderr, "Hash density (#identifiers per bucket): %f\n",
-          NumIdentifiers/(double)NumBuckets);
+          NumIdentifiers / (double)NumBuckets);
   fprintf(stderr, "Ave identifier length: %f\n",
-          (AverageIdentifierSize/(double)NumIdentifiers));
+          (AverageIdentifierSize / (double)NumIdentifiers));
   fprintf(stderr, "Max identifier length: %d\n", MaxIdentifierLength);
 
   // Compute statistics about the memory allocated for identifiers.
@@ -504,7 +513,7 @@ void IdentifierTable::PrintStats() const {
 //===----------------------------------------------------------------------===//
 
 unsigned llvm::DenseMapInfo<clang::Selector>::getHashValue(clang::Selector S) {
-  return DenseMapInfo<void*>::getHashValue(S.getAsOpaquePtr());
+  return DenseMapInfo<void *>::getHashValue(S.getAsOpaquePtr());
 }
 
 bool Selector::isKeywordSelector(ArrayRef<StringRef> Names) const {
@@ -585,9 +594,7 @@ std::string Selector::getAsString() const {
   return getMultiKeywordSelector()->getName();
 }
 
-void Selector::print(llvm::raw_ostream &OS) const {
-  OS << getAsString();
-}
+void Selector::print(llvm::raw_ostream &OS) const { OS << getAsString(); }
 
 LLVM_DUMP_METHOD void Selector::dump() const { print(llvm::errs()); }
 
@@ -595,25 +602,35 @@ LLVM_DUMP_METHOD void Selector::dump() const { print(llvm::errs()); }
 /// conventions, determine whether the given string starts with the
 /// given "word", which is assumed to end in a lowercase letter.
 static bool startsWithWord(StringRef name, StringRef word) {
-  if (name.size() < word.size()) return false;
+  if (name.size() < word.size())
+    return false;
   return ((name.size() == word.size() || !isLowercase(name[word.size()])) &&
           name.starts_with(word));
 }
 
 ObjCMethodFamily Selector::getMethodFamilyImpl(Selector sel) {
   const IdentifierInfo *first = sel.getIdentifierInfoForSlot(0);
-  if (!first) return OMF_None;
+  if (!first)
+    return OMF_None;
 
   StringRef name = first->getName();
   if (sel.isUnarySelector()) {
-    if (name == "autorelease") return OMF_autorelease;
-    if (name == "dealloc") return OMF_dealloc;
-    if (name == "finalize") return OMF_finalize;
-    if (name == "release") return OMF_release;
-    if (name == "retain") return OMF_retain;
-    if (name == "retainCount") return OMF_retainCount;
-    if (name == "self") return OMF_self;
-    if (name == "initialize") return OMF_initialize;
+    if (name == "autorelease")
+      return OMF_autorelease;
+    if (name == "dealloc")
+      return OMF_dealloc;
+    if (name == "finalize")
+      return OMF_finalize;
+    if (name == "release")
+      return OMF_release;
+    if (name == "retain")
+      return OMF_retain;
+    if (name == "retainCount")
+      return OMF_retainCount;
+    if (name == "self")
+      return OMF_self;
+    if (name == "initialize")
+      return OMF_initialize;
   }
 
   if (name == "performSelector" || name == "performSelectorInBackground" ||
@@ -623,22 +640,28 @@ ObjCMethodFamily Selector::getMethodFamilyImpl(Selector sel) {
   // The other method families may begin with a prefix of underscores.
   name = name.ltrim('_');
 
-  if (name.empty()) return OMF_None;
+  if (name.empty())
+    return OMF_None;
   switch (name.front()) {
   case 'a':
-    if (startsWithWord(name, "alloc")) return OMF_alloc;
+    if (startsWithWord(name, "alloc"))
+      return OMF_alloc;
     break;
   case 'c':
-    if (startsWithWord(name, "copy")) return OMF_copy;
+    if (startsWithWord(name, "copy"))
+      return OMF_copy;
     break;
   case 'i':
-    if (startsWithWord(name, "init")) return OMF_init;
+    if (startsWithWord(name, "init"))
+      return OMF_init;
     break;
   case 'm':
-    if (startsWithWord(name, "mutableCopy")) return OMF_mutableCopy;
+    if (startsWithWord(name, "mutableCopy"))
+      return OMF_mutableCopy;
     break;
   case 'n':
-    if (startsWithWord(name, "new")) return OMF_new;
+    if (startsWithWord(name, "new"))
+      return OMF_new;
     break;
   default:
     break;
@@ -649,55 +672,67 @@ ObjCMethodFamily Selector::getMethodFamilyImpl(Selector sel) {
 
 ObjCInstanceTypeFamily Selector::getInstTypeMethodFamily(Selector sel) {
   const IdentifierInfo *first = sel.getIdentifierInfoForSlot(0);
-  if (!first) return OIT_None;
+  if (!first)
+    return OIT_None;
 
   StringRef name = first->getName();
 
-  if (name.empty()) return OIT_None;
+  if (name.empty())
+    return OIT_None;
   switch (name.front()) {
-    case 'a':
-      if (startsWithWord(name, "array")) return OIT_Array;
-      break;
-    case 'd':
-      if (startsWithWord(name, "default")) return OIT_ReturnsSelf;
-      if (startsWithWord(name, "dictionary")) return OIT_Dictionary;
-      break;
-    case 's':
-      if (startsWithWord(name, "shared")) return OIT_ReturnsSelf;
-      if (startsWithWord(name, "standard")) return OIT_Singleton;
-      break;
-    case 'i':
-      if (startsWithWord(name, "init")) return OIT_Init;
-      break;
-    default:
-      break;
+  case 'a':
+    if (startsWithWord(name, "array"))
+      return OIT_Array;
+    break;
+  case 'd':
+    if (startsWithWord(name, "default"))
+      return OIT_ReturnsSelf;
+    if (startsWithWord(name, "dictionary"))
+      return OIT_Dictionary;
+    break;
+  case 's':
+    if (startsWithWord(name, "shared"))
+      return OIT_ReturnsSelf;
+    if (startsWithWord(name, "standard"))
+      return OIT_Singleton;
+    break;
+  case 'i':
+    if (startsWithWord(name, "init"))
+      return OIT_Init;
+    break;
+  default:
+    break;
   }
   return OIT_None;
 }
 
 ObjCStringFormatFamily Selector::getStringFormatFamilyImpl(Selector sel) {
   const IdentifierInfo *first = sel.getIdentifierInfoForSlot(0);
-  if (!first) return SFF_None;
+  if (!first)
+    return SFF_None;
 
   StringRef name = first->getName();
 
   switch (name.front()) {
-    case 'a':
-      if (name == "appendFormat") return SFF_NSString;
-      break;
+  case 'a':
+    if (name == "appendFormat")
+      return SFF_NSString;
+    break;
 
-    case 'i':
-      if (name == "initWithFormat") return SFF_NSString;
-      break;
+  case 'i':
+    if (name == "initWithFormat")
+      return SFF_NSString;
+    break;
 
-    case 'l':
-      if (name == "localizedStringWithFormat") return SFF_NSString;
-      break;
+  case 'l':
+    if (name == "localizedStringWithFormat")
+      return SFF_NSString;
+    break;
 
-    case 's':
-      if (name == "stringByAppendingFormat" ||
-          name == "stringWithFormat") return SFF_NSString;
-      break;
+  case 's':
+    if (name == "stringByAppendingFormat" || name == "stringWithFormat")
+      return SFF_NSString;
+    break;
   }
   return SFF_None;
 }
@@ -712,23 +747,21 @@ struct SelectorTableImpl {
 } // namespace
 
 static SelectorTableImpl &getSelectorTableImpl(void *P) {
-  return *static_cast<SelectorTableImpl*>(P);
+  return *static_cast<SelectorTableImpl *>(P);
 }
 
-SmallString<64>
-SelectorTable::constructSetterName(StringRef Name) {
+SmallString<64> SelectorTable::constructSetterName(StringRef Name) {
   SmallString<64> SetterName("set");
   SetterName += Name;
   SetterName[3] = toUppercase(SetterName[3]);
   return SetterName;
 }
 
-Selector
-SelectorTable::constructSetterSelector(IdentifierTable &Idents,
-                                       SelectorTable &SelTable,
-                                       const IdentifierInfo *Name) {
+Selector SelectorTable::constructSetterSelector(IdentifierTable &Idents,
+                                                SelectorTable &SelTable,
+                                                const IdentifierInfo *Name) {
   IdentifierInfo *SetterName =
-    &Idents.get(constructSetterName(Name->getName()));
+      &Idents.get(constructSetterName(Name->getName()));
   return SelTable.getUnarySelector(SetterName);
 }
 
@@ -756,12 +789,13 @@ Selector SelectorTable::getSelector(unsigned nKeys,
 
   void *InsertPos = nullptr;
   if (MultiKeywordSelector *SI =
-        SelTabImpl.Table.FindNodeOrInsertPos(ID, InsertPos))
+          SelTabImpl.Table.FindNodeOrInsertPos(ID, InsertPos))
     return Selector(SI);
 
   // MultiKeywordSelector objects are not allocated with new because they have a
   // variable size array (for parameter types) at the end of them.
-  unsigned Size = sizeof(MultiKeywordSelector) + nKeys*sizeof(IdentifierInfo *);
+  unsigned Size =
+      sizeof(MultiKeywordSelector) + nKeys * sizeof(IdentifierInfo *);
   MultiKeywordSelector *SI =
       (MultiKeywordSelector *)SelTabImpl.Allocator.Allocate(
           Size, alignof(MultiKeywordSelector));
@@ -770,13 +804,9 @@ Selector SelectorTable::getSelector(unsigned nKeys,
   return Selector(SI);
 }
 
-SelectorTable::SelectorTable() {
-  Impl = new SelectorTableImpl();
-}
+SelectorTable::SelectorTable() { Impl = new SelectorTableImpl(); }
 
-SelectorTable::~SelectorTable() {
-  delete &getSelectorTableImpl(Impl);
-}
+SelectorTable::~SelectorTable() { delete &getSelectorTableImpl(Impl); }
 
 const char *clang::getOperatorSpelling(OverloadedOperatorKind Operator) {
   switch (Operator) {
@@ -784,8 +814,9 @@ const char *clang::getOperatorSpelling(OverloadedOperatorKind Operator) {
   case NUM_OVERLOADED_OPERATORS:
     return nullptr;
 
-#define OVERLOADED_OPERATOR(Name,Spelling,Token,Unary,Binary,MemberOnly) \
-  case OO_##Name: return Spelling;
+#define OVERLOADED_OPERATOR(Name, Spelling, Token, Unary, Binary, MemberOnly)  \
+  case OO_##Name:                                                              \
+    return Spelling;
 #include "clang/Basic/OperatorKinds.def"
   }
 

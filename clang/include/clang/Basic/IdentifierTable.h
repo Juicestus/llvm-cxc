@@ -78,7 +78,8 @@ enum TokenKey : unsigned {
   KEYHLSL = 0x8000000,
   KEYFIXEDPOINT = 0x10000000,
   KEYDEFERTS = 0x20000000,
-  KEYMAX = KEYDEFERTS, // The maximum key
+  KEYCXC = 0x40000000,
+  KEYMAX = KEYCXC, // The maximum key
   KEYALLCXX = KEYCXX | KEYCXX11 | KEYCXX20,
   KEYALL = (KEYMAX | (KEYMAX - 1)) & ~KEYNOMS18 & ~KEYNOOPENCL &
            ~KEYNOZOS // KEYNOMS18, KEYNOOPENCL, KEYNOZOS are excluded.
@@ -125,7 +126,8 @@ inline bool isReservedAtGlobalScope(ReservedIdentifierStatus Status) {
 /// example.
 inline bool isReservedInAllContexts(ReservedIdentifierStatus Status) {
   return Status != ReservedIdentifierStatus::NotReserved &&
-         Status != ReservedIdentifierStatus::StartsWithUnderscoreAtGlobalScope &&
+         Status !=
+             ReservedIdentifierStatus::StartsWithUnderscoreAtGlobalScope &&
          Status != ReservedIdentifierStatus::StartsWithUnderscoreAndIsExternC;
 }
 
@@ -284,10 +286,9 @@ public:
   /// Return true if this is the identifier for the specified string.
   ///
   /// This is intended to be used for string literals only: II->isStr("foo").
-  template <std::size_t StrLen>
-  bool isStr(const char (&Str)[StrLen]) const {
-    return getLength() == StrLen-1 &&
-           memcmp(getNameStart(), Str, StrLen-1) == 0;
+  template <std::size_t StrLen> bool isStr(const char (&Str)[StrLen]) const {
+    return getLength() == StrLen - 1 &&
+           memcmp(getNameStart(), Str, StrLen - 1) == 0;
   }
 
   /// Return true if this is the identifier for the specified StringRef.
@@ -304,17 +305,14 @@ public:
   unsigned getLength() const { return Entry->getKeyLength(); }
 
   /// Return the actual identifier string.
-  StringRef getName() const {
-    return StringRef(getNameStart(), getLength());
-  }
+  StringRef getName() const { return StringRef(getNameStart(), getLength()); }
 
   /// Return true if this identifier is \#defined to some other value.
   /// \note The current definition may be in a module and not currently visible.
-  bool hasMacroDefinition() const {
-    return HasMacro;
-  }
+  bool hasMacroDefinition() const { return HasMacro; }
   void setHasMacroDefinition(bool Val) {
-    if (HasMacro == Val) return;
+    if (HasMacro == Val)
+      return;
 
     HasMacro = Val;
     if (Val) {
@@ -335,9 +333,7 @@ public:
   /// Returns true if this identifier was \#defined to some value at any
   /// moment. In this case there should be an entry for the identifier in the
   /// macro history table in Preprocessor.
-  bool hadMacroDefinition() const {
-    return HadMacro;
-  }
+  bool hadMacroDefinition() const { return HadMacro; }
 
   bool isDeprecatedMacro() const { return IsDeprecatedMacro; }
 
@@ -537,15 +533,11 @@ public:
 
   /// Determine whether this identifier has changed since it was loaded
   /// from an AST file.
-  bool hasChangedSinceDeserialization() const {
-    return ChangedAfterLoad;
-  }
+  bool hasChangedSinceDeserialization() const { return ChangedAfterLoad; }
 
   /// Note that this identifier has changed since it was loaded from
   /// an AST file.
-  void setChangedSinceDeserialization() {
-    ChangedAfterLoad = true;
-  }
+  void setChangedSinceDeserialization() { ChangedAfterLoad = true; }
 
   /// Determine whether the frontend token information for this
   /// identifier has changed since it was loaded from an AST file.
@@ -660,13 +652,13 @@ class PoisonIdentifierRAIIObject {
 
 public:
   PoisonIdentifierRAIIObject(IdentifierInfo *II, bool NewValue)
-    : II(II), OldValue(II ? II->isPoisoned() : false) {
-    if(II)
+      : II(II), OldValue(II ? II->isPoisoned() : false) {
+    if (II)
       II->setIsPoisoned(NewValue);
   }
 
   ~PoisonIdentifierRAIIObject() {
-    if(II)
+    if (II)
       II->setIsPoisoned(OldValue);
   }
 };
@@ -709,7 +701,7 @@ public:
   /// Unlike the version in IdentifierTable, this returns a pointer instead
   /// of a reference.  If the pointer is null then the IdentifierInfo cannot
   /// be found.
-  virtual IdentifierInfo* get(StringRef Name) = 0;
+  virtual IdentifierInfo *get(StringRef Name) = 0;
 
   /// Retrieve an iterator into the set of all identifiers
   /// known to this identifier lookup source.
@@ -735,7 +727,7 @@ class IdentifierTable {
   using HashTableTy = llvm::StringMap<IdentifierInfo *, llvm::BumpPtrAllocator>;
   HashTableTy HashTable;
 
-  IdentifierInfoLookup* ExternalLookup;
+  IdentifierInfoLookup *ExternalLookup;
 
 public:
   /// Create the identifier table.
@@ -756,9 +748,7 @@ public:
     return ExternalLookup;
   }
 
-  llvm::BumpPtrAllocator& getAllocator() {
-    return HashTable.getAllocator();
-  }
+  llvm::BumpPtrAllocator &getAllocator() { return HashTable.getAllocator(); }
 
   /// Return the identifier token info for the specified named
   /// identifier.
@@ -766,7 +756,8 @@ public:
     auto &Entry = *HashTable.try_emplace(Name, nullptr).first;
 
     IdentifierInfo *&II = Entry.second;
-    if (II) return *II;
+    if (II)
+      return *II;
 
     // No entry; if we have an external lookup, look there first.
     if (ExternalLookup) {
@@ -789,7 +780,7 @@ public:
   IdentifierInfo &get(StringRef Name, tok::TokenKind TokenCode) {
     IdentifierInfo &II = get(Name);
     II.TokenID = TokenCode;
-    assert(II.TokenID == (unsigned) TokenCode && "TokenCode too large");
+    assert(II.TokenID == (unsigned)TokenCode && "TokenCode too large");
     return II;
   }
 
@@ -826,8 +817,8 @@ public:
   using const_iterator = HashTableTy::const_iterator;
 
   iterator begin() const { return HashTable.begin(); }
-  iterator end() const   { return HashTable.end(); }
-  unsigned size() const  { return HashTable.size(); }
+  iterator end() const { return HashTable.end(); }
+  unsigned size() const { return HashTable.size(); }
 
   iterator find(StringRef Name) const { return HashTable.find(Name); }
 
@@ -912,11 +903,7 @@ enum ObjCInstanceTypeFamily {
   OIT_ReturnsSelf
 };
 
-enum ObjCStringFormatFamily {
-  SFF_None,
-  SFF_NSString,
-  SFF_CFString
-};
+enum ObjCStringFormatFamily { SFF_None, SFF_NSString, SFF_CFString };
 
 namespace detail {
 
@@ -1043,7 +1030,7 @@ public:
 /// accounts for 78% of all selectors in Cocoa.h.
 class Selector {
   friend class Diagnostic;
-  friend class SelectorTable; // only the SelectorTable can create these
+  friend class SelectorTable;   // only the SelectorTable can create these
   friend class DeclarationName; // and the AST's DeclarationName.
 
   enum IdentifierInfoFlag {
@@ -1184,13 +1171,9 @@ public:
     return getStringFormatFamilyImpl(*this);
   }
 
-  static Selector getEmptyMarker() {
-    return Selector(uintptr_t(-1));
-  }
+  static Selector getEmptyMarker() { return Selector(uintptr_t(-1)); }
 
-  static Selector getTombstoneMarker() {
-    return Selector(uintptr_t(-2));
-  }
+  static Selector getTombstoneMarker() { return Selector(uintptr_t(-2)); }
 
   static ObjCInstanceTypeFamily getInstTypeMethodFamily(Selector sel);
 };
@@ -1264,14 +1247,13 @@ public:
     return Loc != X.Loc || II != X.II;
   }
 };
-}  // namespace clang
+} // namespace clang
 
 namespace llvm {
 
 /// Define DenseMapInfo so that Selectors can be used as keys in DenseMap and
 /// DenseSets.
-template <>
-struct DenseMapInfo<clang::Selector> {
+template <> struct DenseMapInfo<clang::Selector> {
   static clang::Selector getEmptyKey() {
     return clang::Selector::getEmptyMarker();
   }
@@ -1287,8 +1269,7 @@ struct DenseMapInfo<clang::Selector> {
   }
 };
 
-template<>
-struct PointerLikeTypeTraits<clang::Selector> {
+template <> struct PointerLikeTypeTraits<clang::Selector> {
   static const void *getAsVoidPointer(clang::Selector P) {
     return P.getAsOpaquePtr();
   }

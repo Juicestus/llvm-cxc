@@ -314,6 +314,7 @@ Retry:
     SemiError = "co_return";
     break;
   case tok::kw__Defer: // C defer TS: defer-statement
+  case tok::kw_defer:  // CXC: defer-statement
     return ParseDeferStatement(TrailingElseLoc);
 
   case tok::kw_asm: {
@@ -2382,7 +2383,7 @@ StmtResult Parser::ParseReturnStatement() {
 }
 
 StmtResult Parser::ParseDeferStatement(SourceLocation *TrailingElseLoc) {
-  assert(Tok.is(tok::kw__Defer));
+  assert(Tok.is(tok::kw__Defer) || Tok.is(tok::kw_defer));
   SourceLocation DeferLoc = ConsumeToken();
 
   Actions.ActOnStartOfDeferStmt(DeferLoc, getCurScope());

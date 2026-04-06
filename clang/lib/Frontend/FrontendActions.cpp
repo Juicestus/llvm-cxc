@@ -1140,6 +1140,7 @@ void PrintPreambleAction::ExecuteAction() {
   case Language::CUDA:
   case Language::HIP:
   case Language::HLSL:
+  case Language::CXC:
   case Language::CIR:
     break;
 

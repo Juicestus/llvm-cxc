@@ -250,6 +250,8 @@ LANGOPT(HLSLSpvUseUnknownImageFormat, 1, 0, NotCompatible, "For storage images a
 LANGOPT(HLSLSpvEnableMaximalReconvergence, 1, 0, NotCompatible, "Enables the MaximallyReconvergesKHR execution mode for this module. This ensures that control flow reconverges at well-defined merge points as defined by the Vulkan spec.")
 LANGOPT(EmitStructuredGEP, 1, 0, NotCompatible, "Emit structured GEP intrinsics instead of GEP instructions")
 
+LANGOPT(CXCExtensions, 1, 0, NotCompatible, "CXC language extensions")
+
 LANGOPT(CUDAIsDevice      , 1, 0, NotCompatible, "compiling for CUDA device")
 LANGOPT(CUDAHostDeviceConstexpr, 1, 1, NotCompatible, "treating unattributed constexpr functions as __host__ __device__")
 LANGOPT(GPUDeviceApproxTranscendentals, 1, 0, NotCompatible, "using approximate transcendental functions")
