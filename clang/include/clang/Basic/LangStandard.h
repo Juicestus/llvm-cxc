@@ -41,6 +41,7 @@ enum class Language : uint8_t {
   CUDA,
   HIP,
   HLSL,
+  CXC,
   ///@}
 };
 StringRef languageToString(Language L);
@@ -164,6 +165,6 @@ public:
 LangStandard::Kind getDefaultLanguageStandard(clang::Language Lang,
                                               const llvm::Triple &T);
 
-}  // end namespace clang
+} // end namespace clang
 
 #endif

@@ -140,6 +140,8 @@ void LangOptions::setLangDefaults(LangOptions &Opts, Language Lang,
     Opts.MaxMatrixDimension = 4;
   }
 
+  Opts.CXCExtensions = Lang == Language::CXC;
+
   // Set OpenCL Version.
   Opts.OpenCL = Std.isOpenCL();
   if (LangStd == LangStandard::lang_opencl10)

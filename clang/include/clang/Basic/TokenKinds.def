@@ -273,6 +273,7 @@ PUNCTUATOR(greatergreatergreater, ">>>")
 //   KEYC99   - This is a keyword introduced to C in C99
 //   KEYC11   - This is a keyword introduced to C in C11
 //   KEYC23   - This is a keyword introduced to C in C23
+//   KEYCXC   - This is a keyword allowed in CXC Extension Set
 //   KEYCXX   - This is a C++ keyword, or a C++-specific keyword in the
 //              implementation namespace
 //   KEYNOCXX - This is a keyword in every non-C++ dialect.
@@ -363,6 +364,12 @@ KEYWORD(__ob_trap                   , KEYALL)
 
 // C2y
 UNARY_EXPR_OR_TYPE_TRAIT(_Countof, CountOf, KEYNOCXX)
+
+// CXC Support
+KEYWORD(noreturn,     KEYCXC)
+KEYWORD(defer,        KEYCXC)
+KEYWORD(forceinline,  KEYCXC)
+KEYWORD(noinline,     KEYCXC)
 
 // C++ 2.11p1: Keywords.
 KEYWORD(asm                         , KEYCXX|KEYGNU)

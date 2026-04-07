@@ -314,6 +314,7 @@ Retry:
     SemiError = "co_return";
     break;
   case tok::kw__Defer: // C defer TS: defer-statement
+  case tok::kw_defer:  // CXC: defer-statement
     return ParseDeferStatement(TrailingElseLoc);
 
   case tok::kw_asm: {
@@ -1264,7 +1265,7 @@ bool Parser::ParseParenExprOrCondition(StmtResult *InitStmt,
   T.consumeOpen();
   SourceLocation Start = Tok.getLocation();
 
-  if (getLangOpts().CPlusPlus) {
+  if (getLangOpts().CPlusPlus || getLangOpts().CXCExtensions) {
     Cond = ParseCXXCondition(InitStmt, Loc, CK, false);
   } else {
     ExprResult CondExpr = ParseExpression();
@@ -2382,7 +2383,7 @@ StmtResult Parser::ParseReturnStatement() {
 }
 
 StmtResult Parser::ParseDeferStatement(SourceLocation *TrailingElseLoc) {
-  assert(Tok.is(tok::kw__Defer));
+  assert(Tok.is(tok::kw__Defer) || Tok.is(tok::kw_defer));
   SourceLocation DeferLoc = ConsumeToken();
 
   Actions.ActOnStartOfDeferStmt(DeferLoc, getCurScope());

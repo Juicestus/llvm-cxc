@@ -263,6 +263,9 @@ LANGSTANDARD(hlsl202y, "hlsl202y",
              HLSL, "High Level Shader Language 202y",
              LineComment | HLSL | CPlusPlus | CPlusPlus11, std::nullopt)
 
+LANGSTANDARD(cxc23, "cxc23",
+             CXC, "CXC Language Extensions for C23",
+             LineComment | C23 | HexFloat, 202311)
 
 #undef LANGSTANDARD
 #undef LANGSTANDARD_ALIAS

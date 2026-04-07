@@ -1,0 +1,46 @@
+// RUN: %clang_cc1 -x cxc -fsyntax-only %s
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void cleanup_file(FILE **f) {
+    if (*f) {
+        printf("Closing file...\n");
+        fclose(*f);
+    }
+}
+
+void cleanup_buffer(char **buf) {
+    if (*buf) {
+        printf("Freeing buffer: %s\n", *buf);
+        free(*buf);
+    }
+}
+
+int process_data(const char *data) {
+    printf("Processing: %s\n", data);
+    return strlen(data);
+}
+
+int main(int argc, char **argv) {
+    char *buffer = malloc(256);
+    defer cleanup_buffer(&buffer);
+    strcpy(buffer, "Hello from deferred cleanup!");
+    int len = process_data(buffer);
+    printf("String length: %d\n", len);
+
+    char *buffer2 = malloc(128);
+    defer cleanup_buffer(&buffer2);
+    strcpy(buffer2, "Second buffer");
+    printf("Buffer 2: %s\n", buffer2);
+
+    FILE *file = fopen("/tmp/cxc_test.txt", "w");
+    if (file) {
+        defer cleanup_file(&file);
+        fprintf(file, "CXC defer test output\n");
+        printf("File written successfully\n");
+    }
+
+    return 0;
+}
