@@ -8,9 +8,17 @@ But for now, they will live in this repo, as CXC (C eXtension Collection). CXC i
 
 ## Features
 
-* Native `defer` keyword.
-* Native `noreturn` keyword.
+* `defer` keyword.
+* `noreturn` keyword.
 * C++17 style variable declarations inside of if-statements. Like: `if (int x = f(); x > 0) { ... }`.
+* `forceinline` and `noinline` keywords.
+* `packed` keyword.
+* `nodiscard` keyword.
 
+## Planned
+
+* Labeled break/continue
+* Simple class system (methods on structs)
+* Simple interface inheritance
 
 

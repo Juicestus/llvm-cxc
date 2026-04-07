@@ -366,8 +366,10 @@ KEYWORD(__ob_trap                   , KEYALL)
 UNARY_EXPR_OR_TYPE_TRAIT(_Countof, CountOf, KEYNOCXX)
 
 // CXC Support
-KEYWORD(noreturn,  KEYCXC)
-KEYWORD(defer,     KEYCXC)
+KEYWORD(noreturn,     KEYCXC)
+KEYWORD(defer,        KEYCXC)
+KEYWORD(forceinline,  KEYCXC)
+KEYWORD(noinline,     KEYCXC)
 
 // C++ 2.11p1: Keywords.
 KEYWORD(asm                         , KEYCXX|KEYGNU)

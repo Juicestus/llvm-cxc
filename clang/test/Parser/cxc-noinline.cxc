@@ -1,0 +1,22 @@
+// RUN: %clang_cc1 -x cxc -fsyntax-only %s
+
+#include <stdio.h>
+
+noinline void expensive_operation(int n) {
+    printf("Doing expensive work with %d\n", n);
+    for (int i = 0; i < n; i++) {
+        printf(".");
+    }
+    printf("\n");
+}
+
+noinline int compute(int x, int y) {
+    return x * y + x / y;
+}
+
+int main() {
+    expensive_operation(10);
+    int result = compute(100, 5);
+    printf("Computed: %d\n", result);
+    return 0;
+}

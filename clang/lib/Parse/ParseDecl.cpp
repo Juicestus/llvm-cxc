@@ -4212,6 +4212,16 @@ void Parser::ParseDeclarationSpecifiers(
     case tok::kw_noreturn:
       isInvalid = DS.setFunctionSpecNoreturn(Loc, PrevSpec, DiagID);
       break;
+    case tok::kw_forceinline:
+      isInvalid = DS.setFunctionSpecForceInline(Loc, PrevSpec, DiagID);
+      break;
+    case tok::kw_noinline:
+      // Map noinline to an attribute
+      DS.getAttributes().addNew(Tok.getIdentifierInfo(), Loc,
+                                AttributeScopeInfo(), nullptr, 0,
+                                tok::kw_noinline);
+      (void)ConsumeToken();
+      continue;
 
     // friend
     case tok::kw_friend:
@@ -5891,6 +5901,8 @@ bool Parser::isDeclarationSpecifier(
   case tok::kw_explicit:
   case tok::kw__Noreturn:
   case tok::kw_noreturn:
+  case tok::kw_forceinline:
+  case tok::kw_noinline:
 
     // alignment-specifier
   case tok::kw__Alignas:
