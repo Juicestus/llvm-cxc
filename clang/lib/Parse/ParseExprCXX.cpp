@@ -1908,7 +1908,7 @@ Parser::ParseCXXCondition(StmtResult *InitStmt, SourceLocation Loc,
   MaybeParseCXX11Attributes(attrs);
 
   const auto WarnOnInit = [this, &CK] {
-    Diag(Tok.getLocation(), getLangOpts().CPlusPlus17
+    Diag(Tok.getLocation(), (getLangOpts().CPlusPlus17 || getLangOpts().CXCExtensions)
                                 ? diag::warn_cxx14_compat_init_statement
                                 : diag::ext_init_statement)
         << (CK == Sema::ConditionKind::Switch);

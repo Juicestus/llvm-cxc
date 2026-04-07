@@ -1,0 +1,46 @@
+// RUN: %clang_cc1 -x cxc -fsyntax-only %s
+
+#include <stdio.h>
+
+int getValue() {
+    return 42;
+}
+
+const char* getString() {
+    return "hello";
+}
+
+int main() {
+    // Basic if-init with int
+    if (int x = getValue(); x > 40) {
+        printf("x is greater than 40: %d\n", x);
+    }
+
+    // if-init with else
+    if (int y = getValue(); y < 40) {
+        printf("y is less than 40\n");
+    } else {
+        printf("y is >= 40: %d\n", y);
+    }
+
+    // if-init with pointer
+    if (const char* str = getString(); str != 0) {
+        printf("String: %s\n", str);
+    }
+
+    // Nested if-init
+    if (int a = 10; a < 20) {
+        if (int b = getValue(); b > a) {
+            printf("b (%d) > a (%d)\n", b, a);
+        }
+    }
+
+    // if-init with multiple variables (scope limited to the condition)
+    if (int z = 100; z > 50) {
+        printf("z is in scope: %d\n", z);
+        // z is still in scope within the if block
+    }
+    // z is out of scope here
+
+    return 0;
+}
