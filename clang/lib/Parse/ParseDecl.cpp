@@ -2172,7 +2172,7 @@ Parser::DeclGroupPtrTy Parser::ParseDeclGroup(ParsingDeclSpec &DS,
     // The _Noreturn keyword can't appear here, unlike the GNU noreturn
     // attribute. If we find the keyword here, tell the user to put it
     // at the start instead.
-    if (Tok.is(tok::kw__Noreturn)) {
+    if (Tok.isOneOf(tok::kw__Noreturn, tok::kw_noreturn)) {
       SourceLocation Loc = ConsumeToken();
       const char *PrevSpec;
       unsigned DiagID;
@@ -4209,6 +4209,9 @@ void Parser::ParseDeclarationSpecifiers(
       diagnoseUseOfC11Keyword(Tok);
       isInvalid = DS.setFunctionSpecNoreturn(Loc, PrevSpec, DiagID);
       break;
+    case tok::kw_noreturn:
+      isInvalid = DS.setFunctionSpecNoreturn(Loc, PrevSpec, DiagID);
+      break;
 
     // friend
     case tok::kw_friend:
@@ -5887,6 +5890,7 @@ bool Parser::isDeclarationSpecifier(
   case tok::kw_virtual:
   case tok::kw_explicit:
   case tok::kw__Noreturn:
+  case tok::kw_noreturn:
 
     // alignment-specifier
   case tok::kw__Alignas:

@@ -1,0 +1,15 @@
+// RUN: %clang_cc1 -x cxc -fsyntax-only %s
+
+#include <stdio.h>
+#include <stdlib.h>
+
+noreturn void exit_with_error(const char *msg) {
+    printf("Error: %s\n", msg);
+    exit(1);
+}
+
+int main() {
+    printf("This function will never return\n");
+    exit_with_error("Intentional exit");
+    return 0;  // This is unreachable
+}
